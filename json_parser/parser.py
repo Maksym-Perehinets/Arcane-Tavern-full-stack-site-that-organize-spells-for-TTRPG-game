@@ -1,9 +1,7 @@
-import hashlib
 import json
 import os
 
 # Used to make this work when importing JsonParser
-# Have no fucking idea how to make it work other way
 script_dir = os.path.dirname(os.path.realpath(__file__))
 os.chdir(script_dir)
 
@@ -117,14 +115,6 @@ class JsonParser:
             hashed_ranges.append(hash(str(range)))
         for duration in self.__get_durations():
             hashed_durations.append(hash(str(duration)))
-        # for source, range, durations in zip(self.json_files.keys(), self.__get_ranges(), self.__get_durations()):
-        #     hashed_sources.append(hash(source))
-        #     hashed_ranges.append(hash(str(range)))
-        #     hashed_durations.append(hash(str(durations)))
-            # Only for testing DELETE LATER
-            # print(hashed_sources)
-            # print(hashed_ranges)
-            # print(hashed_durations)
 
         # Create list spells
         spell_list = list()

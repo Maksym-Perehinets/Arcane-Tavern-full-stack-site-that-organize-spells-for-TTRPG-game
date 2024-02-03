@@ -1,4 +1,4 @@
-/* ШРИФТ */
+/* Font */
 @font-face {
   font-family: DraconicFont;
   src: url(../Fonts/Draconis-JRw6B.ttf);
@@ -37,8 +37,8 @@ select {
 }
 
 /* ////////////////////
-  ////////// General Styles
-  //////////////////// */
+////////// General Styles
+//////////////////// */
 * {
   margin: 0;
   padding: 0;
@@ -47,17 +47,17 @@ select {
 }
 
 /* ////////////////////
-  ////////// Main container
-  //////////////////// */
+////////// Main container
+//////////////////// */
 .container {
   width: auto;
-  min-height: 100vh;
+  height: 100vh;
   transition: margin-left 0.3s linear;
 }
 
 /* ////////////////////
-  ////////// Sidebar Menu
-  //////////////////// */
+////////// Sidebar Menu
+//////////////////// */
 .sidebar {
   width: 0;
   height: 100%;
@@ -103,10 +103,8 @@ img {
   color: white;
 }
 
-
-
-/* ------------------------------------------------------------------------------------------------------------ */
-.dropdown-check-list{
+/* -----------------------------------------------Ihor ivantso terraria------------------------------------------------------------- */
+.dropdown-check-list {
   display: inline-block;
   margin-bottom: 4%;
   margin-left: 3%;
@@ -169,8 +167,6 @@ img {
 
 /* -------------------------------------------------------------------------------------------------------- */
 
-
-
 .active {
   width: 350px;
 }
@@ -193,7 +189,7 @@ img {
   margin-top: 4%;
   cursor: pointer;
   transition: all 0.3s linear;
-    }
+}
 
 .backwardico {
   justify-content: center;
@@ -211,8 +207,8 @@ img {
 }
 
 /* ////////////////////
-  ////////// HEADER
-  //////////////////// */
+////////// HEADER
+//////////////////// */
 .header {
   width: 100%;
   height: 50px;
@@ -236,7 +232,7 @@ img {
   margin-bottom: 5%;
   font-family: DraconicFont;
   font-size: 170%;
-  background-color: red;
+  background-color: rgb(163, 12, 4);
   color: rgba(21, 21, 21, 1);
   outline: none;
   cursor: pointer;
@@ -259,7 +255,7 @@ img {
   margin-bottom: 5%;
   font-family: DraconicFont;
   font-size: 170%;
-  background-color: red;
+  background-color: rgb(163, 12, 4);
   color: rgba(21, 21, 21, 1);
   outline: none;
   cursor: pointer;
@@ -283,7 +279,7 @@ img {
   border: none;
   border-radius: 10px;
   display: flex;
-  background-color: red;
+  background-color: rgb(163, 12, 4);
   /* font-family: DraconicFont; */
   /* font-size: 160%; */
   color: rgba(21, 21, 21, 1);
@@ -315,86 +311,75 @@ img {
 
 /* Phones */
 @media only screen and (max-width: 1000px) {
-  
   .header {
-    position: fixed;
-    z-index: 2;
-  }
-  
-  .active_margin_left
-  {
-    margin-left: 0%;
-  }
-  
-  .sidebar
-  {
-    z-index: 3;
+      position: fixed;
+      z-index: 2;
   }
 
+  .active_margin_left {
+      margin-left: 0%;
+  }
+
+  .sidebar {
+      z-index: 3;
+  }
 
   .sidebar.active {
-    z-index: 3;
-    width: 100%;
+      z-index: 3;
+      width: 100%;
   }
 
-  .backward
-  {
-    margin-top: 5px;
-    margin-left: 2%;
+  .backward {
+      margin-top: 5px;
+      margin-left: 2%;
   }
 
   .logo {
-    width: 100px;
+      width: 100px;
   }
 
   .btn-toggle {
-    position: absolute;
-    width: 50px;
-    height: 50px;
-    margin: 7px;
+      position: absolute;
+      width: 50px;
+      height: 50px;
+      margin: 7px;
   }
 
   .ListIco {
-    width: 100%;
-    height: 100%;
+      width: 100%;
+      height: 100%;
   }
 
   .text {
-    padding-right: 0%;
-    word-break: break-all;
+      padding-right: 0%;
+      word-break: break-all;
   }
 
-    .sidebar_menu {
+  .sidebar_menu {
       z-index: 2;
-      
+
       display: inline-block;
       flex-direction: column;
-    }
-    
-  
-    .DropList
-    {
+  }
+
+  .DropList {
       margin-left: 60%;
       margin-bottom: 0px;
       margin-top: 0%;
-
-    }
-
-
-    .apply
-    {
-      font-size: 150%;
-      margin-bottom: 17%;
-      width: 90%; 
-      margin-right: 5%;
-      margin-bottom: 60px; 
-    }
-    
-    .clear {
-      font-size: 150%;
-      width: 90%; 
-      margin-right: 5%;
-      margin-bottom: 15px;
-    }
   }
 
+  .apply {
+      font-size: 150%;
+      margin-bottom: 17%;
+      width: 90%;
+      margin-right: 5%;
+      margin-bottom: 60px;
+  }
+
+  .clear {
+      font-size: 150%;
+      width: 90%;
+      margin-right: 5%;
+      margin-bottom: 15px;
+  }
+}

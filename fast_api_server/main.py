@@ -1,23 +1,21 @@
-from fastapi import FastAPI, Depends, HTTPException, responses, status
+from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy import asc, desc
 from sqlalchemy.orm import Session
 from fast_api_server.service import Service
-from typing import List
 
 from database.database import engine, get_db
 from database.models import Sources, Durations, Ranges, Spell
 from database import models
-from . import schemas
+
 
 
 app = FastAPI()
-models.Base.metadata.create_all(bind=engine)
 
 origins = [
-    "http://localhost"
+    "http://localhost",
     "http://localhost:5500",
-    "http://127.0.0.1:5500"
+    "http://127.0.0.1:5500",
+    "http://127.0.0.1:443"
 ]
 
 app.add_middleware(
@@ -30,7 +28,7 @@ app.add_middleware(
 
 """
 To run server pleas enter the following command 
-cd directory/to/your/practice/file 
+cd path/to/your/practice/file 
 then enter
 uvicorn fast_api_server.main:app --reload
 beforehand you must have installed venv and all requirements
@@ -39,11 +37,16 @@ beforehand you must have installed venv and all requirements
 
 @app.get("/")
 async def root():
-    return {"message": "Hello World"}
+    return {
+            "status": "success",
+            "message": "documentation for this api is in path /docs"
+            }
 
 
 @app.get("/spells")
-async def dbtest(db: Session = Depends(get_db)):
+async def dbtest(
+        db: Session = Depends(get_db)
+):
     """
     Get short information of each spell in the database.
 
@@ -68,52 +71,32 @@ async def dbtest(db: Session = Depends(get_db)):
     ```
 
     """
+    service_instance = Service()
     result = (
         db.query(Spell, Durations, Ranges)
         .join(Durations, Durations.id == Spell.duration_id)
         .join(Ranges, Ranges.id == Spell.spell_range_id)
-        .all()
     )
 
     # Data consistency check
     if None in result:
         # if data is corrupted
-        raise HTTPException(status_code=404, detail="Something went wrong with database pleas contact owner")
+        raise HTTPException(status_code=500, detail="Internal server error: Database issue")
     else:
         # if data is correct then return list of dicts
-        formatted_result = [
-            {
-                "id": spell.id,
-                "name": spell.spell_name,
-                "level": spell.spell_level,
-                "components": spell.components,
-                # Duration type, time, concentration
-                "duration": {
-                    "type": duration.duration_type,
-                    "time": duration.duration_time,
-                    "concentration": duration.concentration
-                },
-                "time": spell.cast_time,
-                # Range with
-                "ranges": {
-                    "type": ranges.shape,
-                    "distance": {
-                        "type": ranges.distance_type,
-                        "amount": ranges.distance_range
-                    }
-                }
-            }
-            for spell, duration, ranges in result
-        ]
+        formatted_result = service_instance.format_result_for_all_spells(result.all())
 
         return {
-            "status": "spell",
+            "status": "success",
             "data": formatted_result
         }
 
 
 @app.get("/get-spell/{spell_id}")
-async def get_spell(spell_id: int, db: Session = Depends(get_db)):
+async def get_spell(
+        spell_id: int,
+        db: Session = Depends(get_db)
+):
     """
     Retrieve information about a spell by its ID.
 
@@ -150,31 +133,44 @@ async def get_spell(spell_id: int, db: Session = Depends(get_db)):
     ```
     """
     service_instance = Service()
-
     result = (
         db.query(Spell, Sources.book_name, Durations, Ranges)
         .join(Sources, Sources.id == Spell.source_id)
         .join(Durations, Durations.id == Spell.duration_id)
         .join(Ranges, Ranges.id == Spell.spell_range_id)
-        .filter(Spell.id == spell_id)
-        .all()
+
     )
 
     # Data consistency check
     if None in result:
         # if data is corrupted
-        raise HTTPException(status_code=404, detail="Something went wrong with database pleas contact owner")
+        raise HTTPException(
+            status_code=500,
+            detail="Internal server error: Database issue"
+        )
+    elif spell_id > result.count():
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid spell_id parameter. It should be less then or equal {result.count()}"
+        )
     else:
         # if data is correct then return list of dicts
-        formatted_result = service_instance.format_spell(result)
+        formatted_result = service_instance.format_spell(
+            result.filter(Spell.id == spell_id)
+            .all()
+        )
         return {
-            "status": "pussy test",
+            "status": "success",
             "data": formatted_result
         }
 
 
 @app.get("/data-sort/")
-async def data_filter(filter_name: str, asc_value: bool = True, db: Session = Depends(get_db)):
+async def data_sort(
+        filter_name: str,
+        asc_value: bool = True,
+        db: Session = Depends(get_db)
+):
     """
     Endpoint to filter and retrieve data based on different criteria.
 
@@ -196,7 +192,8 @@ async def data_filter(filter_name: str, asc_value: bool = True, db: Session = De
         - For `filter_name` = "lvl", the data is filtered and ordered by spell level.
         - For `filter_name` = "name", the data is filtered and ordered by spell name.
         - For `filter_name` = "concentration", the data is filtered based on concentration (1 for True, 0 for False).
-        - For `filter_name` = "duration", the data is filtered and ordered by spell duration.
+        - For `filter_name` = "duration", the data is filtered and ordered by spell duration `to get non-durational
+         spells first do not pass anithing to asc_value else pass False`
         - For `filter_name` = "time", the data is filtered and ordered by casting time.
         - For `filter_name` = "range", the data is filtered and ordered by spell range.
 
@@ -215,51 +212,22 @@ async def data_filter(filter_name: str, asc_value: bool = True, db: Session = De
     """
     service_instance = Service()
     result = (
-            db.query(Spell, Sources.book_name, Durations, Ranges)
-            .join(Sources, Sources.id == Spell.source_id)
+            db.query(Spell, Durations, Ranges)
             .join(Durations, Durations.id == Spell.duration_id)
             .join(Ranges, Ranges.id == Spell.spell_range_id)
         )
-    if filter_name == "lvl":
-        result = (
-            result.order_by(asc(Spell.spell_level) if asc_value is True else desc(Spell.spell_level))
-        ).all()
-
-    elif filter_name == "name":
-        result = (
-            result.order_by(asc(Spell.spell_name) if asc_value is True else desc(Spell.spell_name))
-        ).all()
-
-    elif filter_name == "concentration":
-        result = (
-            result.filter(Durations.concentration == 1 if asc_value is True else Durations.concentration == 0)
-        ).all()
-
-    elif filter_name == "duration":
-        result = (
-            result.order_by(asc(Durations.duration_time) if asc_value is True else desc(Durations.duration_time))
-            .order_by(desc(Durations.duration_type))
-        ).all()
-
-    elif filter_name == "time":
-        result = (
-            result.order_by(asc(Spell.cast_time) if asc_value is True else desc(Spell.cast_time))
-        ).all()
-
-    elif filter_name == "range":
-        result = (
-            result.order_by(asc(Ranges.distance_range) if asc_value is True else desc(Ranges.distance_range))
-            .order_by(desc(Durations.duration_type))
-        ).all()
 
     if None in result:
         # if data is corrupted
-        raise HTTPException(status_code=404, detail="Something went wrong with database pleas contact owner")
+        raise HTTPException(
+            status_code=500,
+            detail="Internal server error: Database issue"
+        )
     else:
         # if data is correct then return list of dicts
-        formatted_result = service_instance.format_spell(result)
+        formatted_result = service_instance.apply_sort(result, filter_name, asc_value)
         return {
-            "status": "pussy test",
+            "status": "success",
             "data": formatted_result
         }
 
@@ -293,7 +261,8 @@ async def data_filter(
     - `duration_time` (int): Filter spells by the duration time.
     - `duration_type` (str): Filter spells by the duration type.
     - `casting_time` (str): Filter spells by the casting time.
-    - `casting_type` (str): Filter spells by the casting type.
+    - `casting_type` (str): Filter spells by the casting type if you want to get spells that casts for bonus actiona
+       `just enter bonus`.
     - `db` (Session): Dependency injection for the database session.
 
     Query Parameters:
@@ -307,8 +276,7 @@ async def data_filter(
     - `data` (dict): A dictionary containing paginated results and metadata.
     """
     service_instance = Service()
-    db_request = db.query(Spell, Sources.book_name, Durations, Ranges) \
-        .join(Sources, Sources.id == Spell.source_id) \
+    db_request = db.query(Spell, Durations, Ranges)  \
         .join(Durations, Durations.id == Spell.duration_id) \
         .join(Ranges, Ranges.id == Spell.spell_range_id)
 
@@ -354,27 +322,45 @@ async def data_filter(
             Spell.cast_time == service_instance.casting_type_for_comperation(casting_type, casting_time)
         )
 
-    # Result formatting to suite response model
-    formatted_result = service_instance.format_spell(db_request.all())
-    formatted_result = formatted_result
-
     if caster_class is not None:
         formatted_result = [
-                            spell_data for spell_data in formatted_result
-                            if any(caster['name'] in caster_class for caster in spell_data.get('casters', []))
-                           ]
+            {
+                "id": spell.id,
+                "name": spell.spell_name,
+                "level": spell.spell_level,
+                "components": spell.components,
+                "duration": {
+                    "type": duration.duration_type,
+                    "time": duration.duration_time,
+                    "concentration": duration.concentration
+                },
+                "time": spell.cast_time,
+                "ranges": {
+                    "type": ranges.shape,
+                    "distance": {
+                        "type": ranges.distance_type,
+                        "amount": ranges.distance_range
+                    }
+                }
+            }
+            for spell, duration, ranges in db_request.all()
+            if any(caster_class in caster.get("name", "") for caster in spell.suitable_casters)
+        ]
+    else:
+        formatted_result = service_instance.format_result_for_all_spells(db_request.all())
 
     return {
-        "status": "pussy test",
+        "status": "success",
         "data": formatted_result
     }
 
 
 """
 Registration and Log in 
+Will be provided in further updates
 """
 
 
-@app.post("/register/")
-async def register():
-    return responses.RedirectResponse("/?msg=sucsessfull", status_code=status.HTTP_201_CREATED)
+# @app.post("/register/")
+# async def register():
+#     return responses.RedirectResponse("/?msg=success", status_code=status.HTTP_201_CREATED)

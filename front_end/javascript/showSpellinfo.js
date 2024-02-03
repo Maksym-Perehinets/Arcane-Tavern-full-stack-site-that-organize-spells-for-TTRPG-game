@@ -17,6 +17,25 @@ document.addEventListener("DOMContentLoaded", function () {
   tbody.addEventListener("click", function (event) {
     handleTableRowClick(event);
   });
+
+  var tooltip = document.getElementById("tooltip");
+
+  document.addEventListener("click", function(event) {
+    if (event.target.dataset.tooltip) {
+      tooltip.style.display = "block";
+      tooltip.style.left = (event.pageX + 0) + "px";
+      tooltip.style.top = (event.pageY + -25) + "px";
+      // tooltip.innerHTML = "";
+    }
+      
+    
+  });
+
+  document.addEventListener("mouseout", function(event) {
+    if (event.target.dataset.tooltip) {
+      tooltip.style.display = "none";
+    }
+  });
 });
 
 async function firstInfoFulfilment() {
@@ -66,11 +85,31 @@ function insertInfoIntoDescription(data) {
   spellRange.innerHTML = sdata.ranges.distance.amount
     ? `${sdata.ranges.distance.amount} ${sdata.ranges.distance.type}`
       : sdata.ranges.distance.type
-
       
-  spellDescription.innerHTML = sdata.description;
+  spellDescription.innerHTML = " ";
+  sdata.description.forEach(entries=> {
+    console.log(entries.type);
+    if(entries.type == "table"){
+      spellDescription.innerHTML += 
+      "<table id='spellInfoTable'>" +
+        "<thead>"+
+          "<tr>"+
+            "<th><a>" + entries.colLabels[0] +"</a></th>"+
+            "<th><a>" + entries.colLabels[1] +"</a></th>"+
+          "</tr>"+
+        "</thead>"+
+        "<tbody>"+ fillInfoIntoTable(entries) +"</tbody>"+
+      "</table>";
+    }
+    else if(typeof(entries.type) != "undefined"){
+      spellDescription.innerHTML += "<p>" + (typeof(entries.name) != "undefined" ? " " : entries.name)  + " " + entries.entries + "</a>";
+    } else {
+      spellDescription.innerHTML += "<p>" + entries + "</a>";
+    }
+})
+
   spellDescription.innerHTML = spellDescription.innerHTML.replace(/\{.*?\}/g, 
-    function(capturedText){ return "<a href='#sad' onclick='clickableTextFunc(\" " + capturedText + "\")'>" + capturedText + "</a>";}
+  function(capturedText){ return "<a href='#sad' data-tooltip='Click me!' class='clickable' onclick='clickableTextFunc(\" " + capturedText.slice(2, -1) + "\")'>" + capturedText.slice(2, -1) + "</a>";}
   );
 
   spellLevel.innerHTML = sdata.level;
@@ -104,14 +143,41 @@ function insertInfoIntoDescription(data) {
   } )
 }
 
+
 function clickableTextFunc(incomingText){
-  var matches = incomingText.match(/@(.*?)\s/);
-  someText = matches[1];
-  switch(someText){
+  var matches = incomingText.split(" ");
+  var textType = matches[1];
+  var dice =  matches[2].split("d");
+  var result = [];
+  var resultSum = 0;
+  var tipDiv = document.getElementById("tooltip");
+
+
+  switch(textType){
     case "dice": 
-      console.log(Math.floor((Math.random() * 20) + 1));
-  }
- 
+      for (var i = 0; i < dice[0]; i++){
+        for (var i = 0; i < dice[0]; i++){
+          randSum = Math.floor((Math.random() * dice[1]) + 1)
+          result.push(randSum);
+          resultSum += randSum;
+        }
+      }
+      break;
+    case "damage":
+      for (var i = 0; i < dice[0]; i++){
+        randSum = Math.floor((Math.random() * dice[1]) + 1)
+        result.push(randSum);
+        resultSum += randSum;
+      }
+      break;
+    case "spell":
+      srcInTable();
+      break;
+    }
+
+    let resultString = result.join("+");
+
+  tipDiv.innerHTML = `${resultString} = ${resultSum}`;
 }
 
 
@@ -137,5 +203,4 @@ function clickableTextFunc(incomingText){
 //     console.error("Error:", error);
 //   }
 // }
-
 

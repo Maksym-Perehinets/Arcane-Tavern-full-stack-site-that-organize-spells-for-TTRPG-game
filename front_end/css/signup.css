@@ -1,6 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
-
-/* ШРИФТ */
+/* Fonts */
 @font-face {
   font-family:DraconicFont ;
   src: url(../Fonts/Draconis-JRw6B.ttf);
@@ -25,7 +23,6 @@ body {
   }
 
   .backmenu {
-    /* min-width: 138px; */
     width: 138px;
     height: 37px;
     border: none;
@@ -79,17 +76,18 @@ body {
 
 
   #signupTitle {
-    /* font-family: Verdana, Geneva, Tahoma, sans-serif; */
-    font-family: "Roboto", sans-serif;
+    font-family: DraconicFont;
     font-size: 45px;
     color: #ffffff8f;
     user-select: none;
+    border-color: #BF1818;
+    border: ;
+
   }
 
   #formDiv {
     margin-top: 100px;
     color: #ffffff8f;
-    /* font-family: Verdana, Geneva, Tahoma, sans-serif; */
     font-family: "Roboto", sans-serif;
     text-align: left;
     margin-left: 90px;
@@ -196,3 +194,13 @@ body {
  span {
     user-select: none;
  }
+
+
+ #tooltip {
+  position: absolute;
+  display: none;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  padding: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
